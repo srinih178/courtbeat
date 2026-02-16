@@ -1,0 +1,200 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum WorkoutType {
+  CONDITIONING
+  PILATES
+  ZUMBA
+  SPORT_SPECIFIC
+  REFORMER_PILATES
+}
+
+enum WorkoutDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  ALL_LEVELS
+}
+
+enum SportType {
+  PADEL
+  PICKLEBALL
+  TENNIS
+  GENERAL
+}
+
+enum SubscriptionTier {
+  BASE
+  PREMIUM
+}
+
+model Club {
+  id              String            @id @default(uuid())
+  name            String
+  email           String            @unique
+  accessCode      String            @unique
+  address         String?
+  contactPerson   String?
+  contactPhone    String?
+  subscriptionTier SubscriptionTier @default(BASE)
+  hasReformer     Boolean           @default(false)
+  isActive        Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  schedules       Schedule[]
+  analytics       Analytics[]
+  clubAdmin       ClubAdmin[]
+
+  @@index([accessCode])
+  @@map("clubs")
+}
+
+model ClubAdmin {
+  id          String   @id @default(uuid())
+  clubId      String
+  email       String   @unique
+  passwordHash String
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  club        Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([clubId])
+  @@map("club_admins")
+}
+
+model Workout {
+  id              String            @id @default(uuid())
+  title           String
+  description     String?
+  type            WorkoutType
+  sportType       SportType         @default(GENERAL)
+  difficulty      WorkoutDifficulty @default(ALL_LEVELS)
+  duration        Int               // in minutes
+  requiresReformer Boolean          @default(false)
+  requiresRacket  Boolean          @default(false)
+  requiresMat     Boolean          @default(false)
+  hasVerbalCues   Boolean          @default(true)
+  hasVisualMods   Boolean          @default(false) // Phase 1.5+
+  instructorNotes String?
+  thumbnailUrl    String?
+  isActive        Boolean          @default(true)
+  sortOrder       Int              @default(0)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  videos          Video[]
+  schedules       Schedule[]
+  analytics       Analytics[]
+
+  @@index([type, sportType])
+  @@index([requiresReformer])
+  @@map("workouts")
+}
+
+model Video {
+  id              String   @id @default(uuid())
+  workoutId       String
+  fileName        String
+  originalUrl     String?  // Original uploaded file
+  muxAssetId      String?  // Mux asset ID
+  muxPlaybackId   String?  // Mux playback ID
+  streamUrl       String?  // Mux stream URL
+  duration        Int?     // in seconds
+  fileSize        Int?     // in bytes
+  width           Int?
+  height          Int?
+  hasMusic        Boolean  @default(false)
+  musicTrackName  String?
+  isProcessed     Boolean  @default(false)
+  processingError String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  workout         Workout  @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+
+  @@index([workoutId])
+  @@index([muxAssetId])
+  @@map("videos")
+}
+
+model Schedule {
+  id          String   @id @default(uuid())
+  clubId      String
+  workoutId   String
+  scheduledAt DateTime
+  duration    Int      // in minutes
+  isCompleted Boolean  @default(false)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  club        Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  workout     Workout  @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+
+  @@index([clubId, scheduledAt])
+  @@index([workoutId])
+  @@map("schedules")
+}
+
+model Analytics {
+  id              String   @id @default(uuid())
+  clubId          String
+  workoutId       String?
+  eventType       String   // workout_played, workout_completed, session_started, etc.
+  sessionId       String?  // Anonymous session tracking
+  metadata        Json?    // Additional event data
+  timestamp       DateTime @default(now())
+
+  club            Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  workout         Workout? @relation(fields: [workoutId], references: [id], onDelete: SetNull)
+
+  @@index([clubId, timestamp])
+  @@index([workoutId])
+  @@index([eventType, timestamp])
+  @@map("analytics")
+}
+
+model MusicTrack {
+  id              String   @id @default(uuid())
+  title           String
+  artist          String?
+  source          String   // epidemic, artlist, etc.
+  licenseInfo     String?
+  fileUrl         String
+  duration        Int      // in seconds
+  bpm             Int?
+  energy          String?  // low, medium, high
+  genre           String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([energy, bpm])
+  @@map("music_tracks")
+}
+
+model ContentBatch {
+  id              String   @id @default(uuid())
+  name            String
+  description     String?
+  status          String   @default("pending") // pending, processing, completed, failed
+  totalItems      Int      @default(0)
+  processedItems  Int      @default(0)
+  errorLog        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("content_batches")
+}
