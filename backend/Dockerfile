@@ -1,10 +1,25 @@
-FROM node:18-alpine
+FROM node:18-slim
+
+# Install OpenSSL and build tools
+RUN apt-get update -y && \
+    apt-get install -y \
+    openssl \
+    ca-certificates \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install dependencies
+# Copy package files
 COPY package*.json ./
-RUN npm install
+
+# Install dependencies
+RUN npm ci
+
+# Rebuild native modules inside container (critical for bcrypt)
+RUN npm rebuild bcrypt --build-from-source
 
 # Copy source code
 COPY . .
