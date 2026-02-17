@@ -1,0 +1,139 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # Backend Tests
+  backend-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+      
+      - name: Generate Prisma Client
+        working-directory: ./backend
+        run: npx prisma generate
+      
+      - name: Run Prisma migrations
+        working-directory: ./backend
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/test_db?schema=public
+        run: npx prisma migrate deploy
+      
+      - name: Run backend tests
+        working-directory: ./backend
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/test_db?schema=public
+          JWT_SECRET: test-secret
+        run: npm test
+      
+      - name: Lint backend code
+        working-directory: ./backend
+        run: npm run lint
+
+  # Frontend Tests
+  frontend-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+      
+      - name: Run frontend tests
+        working-directory: ./frontend
+        run: npm test --passWithNoTests
+      
+      - name: Lint frontend code
+        working-directory: ./frontend
+        run: npm run lint
+      
+      - name: Build frontend
+        working-directory: ./frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:4000/api
+        run: npm run build
+
+  # Build Docker Images
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Build backend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend
+          push: false
+          tags: racket-fitness-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Build frontend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          push: false
+          tags: racket-fitness-frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Deploy (placeholder - configure for your deployment target)
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Deploy notification
+        run: |
+          echo "🚀 Ready to deploy to production"
+          echo "Configure deployment steps based on your hosting provider"
+          echo "Options: AWS ECS, Google Cloud Run, DigitalOcean, Heroku, etc."
