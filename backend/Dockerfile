@@ -11,7 +11,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# Rebuild bcrypt for Linux
+# Rebuild bcrypt for Linux (in builder stage)
 RUN npm rebuild bcrypt --build-from-source
 
 # Copy source
@@ -35,17 +35,19 @@ RUN apt-get update -y && \
 
 WORKDIR /app
 
-# Copy package files and install production dependencies
+# Copy package.json
 COPY package*.json ./
+
+# Install production dependencies only
 RUN npm ci --omit=dev
 
-# Rebuild bcrypt for production
-RUN npm rebuild bcrypt --build-from-source
+# Copy the ALREADY BUILT bcrypt from builder stage (don't rebuild)
+COPY --from=builder /app/node_modules/bcrypt ./node_modules/bcrypt
 
 # Copy compiled application
 COPY --from=builder /app/dist ./dist
 
-# Copy Prisma files
+# Copy Prisma files (client + migrations)
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY prisma ./prisma
@@ -54,10 +56,11 @@ COPY prisma ./prisma
 COPY start.sh ./start.sh
 RUN chmod +x start.sh
 
-# Verify critical files exist
+# Verify everything is in place
 RUN test -f dist/main.js && \
     test -f start.sh && \
-    test -d node_modules/.prisma
+    test -d node_modules/.prisma && \
+    test -d node_modules/bcrypt
 
 EXPOSE 4000
 ENV NODE_ENV=production
