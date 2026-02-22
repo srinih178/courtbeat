@@ -1,0 +1,11 @@
+[phases.setup]
+aptPkgs = ["openssl", "ca-certificates", "python3", "make", "g++"]
+
+[phases.install]
+cmds = ["npm ci", "npm rebuild bcrypt --build-from-source"]
+
+[phases.build]
+cmds = ["npx prisma generate", "npm run build"]
+
+[start]
+cmd = "npx prisma migrate deploy && node dist/seed-runner.js && node dist/main"

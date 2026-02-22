@@ -1,11 +1,10 @@
 node_modules
 npm-debug.log
 .env
+.env.local
 .DS_Store
-dist
+.next
 coverage
 .git
 .gitignore
 *.log
-uploads/*
-!uploads/.gitkeep

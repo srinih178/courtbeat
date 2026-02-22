@@ -1,34 +1,54 @@
-FROM node:18-slim
+# ---- Build stage ----
+FROM node:18-slim AS builder
 
-# Install OpenSSL and build tools
 RUN apt-get update -y && \
-    apt-get install -y \
-    openssl \
-    ca-certificates \
-    python3 \
-    make \
-    g++ \
-    && rm -rf /var/lib/apt/lists/*
+    apt-get install -y openssl ca-certificates python3 make g++ && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
-
-# Install dependencies
 RUN npm ci
 
-# Rebuild native modules inside container (critical for bcrypt)
+# Rebuild bcrypt compiled for Linux
 RUN npm rebuild bcrypt --build-from-source
 
-# Copy source code
 COPY . .
 
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Expose port
-EXPOSE 4000
+# Build TypeScript
+RUN npm run build
 
-# Start development server
-CMD ["npm", "run", "start:dev"]
+# ---- Production stage ----
+FROM node:18-slim
+
+RUN apt-get update -y && \
+    apt-get install -y openssl ca-certificates python3 make g++ && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+# Rebuild bcrypt for Linux in production image
+RUN npm rebuild bcrypt --build-from-source
+
+# Copy compiled output
+COPY --from=builder /app/dist ./dist
+
+# Copy Prisma (generated client + migrations + schema)
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY prisma ./prisma
+
+# Copy start script
+COPY start.sh ./start.sh
+RUN chmod +x start.sh
+
+EXPOSE 4000
+ENV NODE_ENV=production
+
+CMD ["./start.sh"]
