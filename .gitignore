@@ -3,56 +3,42 @@ node_modules/
 .pnp
 .pnp.js
 
-# Testing
-coverage/
-*.log
-
-# Next.js
+# Build outputs
+dist/
 .next/
 out/
 build/
-dist/
 
-# Production
-.vercel
-.env*.local
-.env.production
-
-# Environment variables
+# Environment files
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# Debug
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# OS files
+.DS_Store
+Thumbs.db
+
 # IDE
 .vscode/
 .idea/
-*.swp
-*.swo
-*.swn
-.DS_Store
 
 # Prisma
-prisma/migrations/
-!prisma/migrations/.gitkeep
-
-# Uploads
-uploads/*
-!uploads/.gitkeep
-
-# Database
-*.db
-*.sqlite
+backend/prisma/dev.db
+backend/prisma/*.db
 
 # Docker
-docker-compose.override.yml
+.docker/
 
-# Misc
-*.pem
-.cache/
+# Uploads (keep folder)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Windows batch files (not needed in git)
+*.bat

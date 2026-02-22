@@ -1,211 +1,73 @@
-# CourtBeat - AI Fitness Platform
+# 🎾 CourtBeat – AI-Powered Fitness Platform
 
-AI-powered fitness platform for racket sports clubs with on-demand workout streaming, AI avatar content, and club management.
+Professional fitness content for padel, pickleball, and tennis clubs.
 
-## 🏋️ Overview
+## Quick Start (Cloud)
 
-CourtBeat delivers professional fitness content to padel, pickleball, and tennis clubs without requiring paid instructors. Features include Zumba-style racket dance sessions, bodyweight Pilates, sport-specific conditioning, and AI-generated workout content with dynamic music overlays.
+See [RAILWAY-DEPLOY.md](./RAILWAY-DEPLOY.md) for full deployment guide.
 
-## 🏗️ Architecture
+## Quick Start (Local)
 
-- **Frontend**: Next.js 14 + Tailwind CSS (TV/tablet optimized)
-- **Backend**: NestJS + TypeScript
-- **Database**: PostgreSQL 15
-- **Video Streaming**: Mux + FFmpeg
-- **AI Avatars**: Synthesia/HeyGen integration ready
-- **Deployment**: Docker + Docker Compose
-- **CI/CD**: GitHub Actions
-
-## 📁 Project Structure
-
-```
-racket-fitness-platform/
-├── backend/               # NestJS API server
-│   ├── src/
-│   │   ├── modules/      # Feature modules
-│   │   ├── common/       # Shared utilities
-│   │   └── main.ts       # Entry point
-│   ├── prisma/           # Database schema & migrations
-│   └── package.json
-├── frontend/             # Next.js web app
-│   ├── src/
-│   │   ├── app/          # App router pages
-│   │   ├── components/   # React components
-│   │   └── lib/          # Utilities
-│   └── package.json
-├── .github/workflows/    # CI/CD pipelines
-├── docker-compose.yml    # Local development
-└── README.md
-```
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+
-- Docker & Docker Compose
-- PostgreSQL 15+ (or use Docker)
-
-### Automated Setup
-
-**Windows:**
-```cmd
-setup.bat
-```
-Or with PowerShell:
-```powershell
-powershell -ExecutionPolicy Bypass -File .\setup.ps1
-```
-
-**Linux/Mac:**
+### Manual Setup (Recommended)
 ```bash
-chmod +x setup.sh
-./setup.sh
-```
+# 1. Install PostgreSQL 15 + Node.js 18
 
-Choose option 1 (Docker Compose) for the easiest setup.
+# 2. Create database
+psql -U postgres -c "CREATE DATABASE racket_fitness;"
 
-### Manual Setup
-
-1. **Install dependencies**
-```bash
-# Backend
+# 3. Backend
 cd backend
+cp .env.example .env
+# Edit .env with your PostgreSQL password
 npm install
+npx prisma migrate deploy
+npx prisma db seed
+npm run start:dev
 
-# Frontend
-cd ../frontend
+# 4. Frontend (new terminal)
+cd frontend
+echo "NEXT_PUBLIC_API_URL=http://localhost:4000/api" > .env.local
 npm install
+npm run dev
 ```
 
-2. **Configure environment variables**
-```bash
-# Backend (.env)
-cp backend/.env.example backend/.env
-
-# Frontend (.env.local)
-cp frontend/.env.example frontend/.env.local
-```
-
-3. **Start with Docker Compose**
+### Docker Setup
 ```bash
 docker-compose up -d
+# Wait 30s then seed:
+docker cp backend/prisma/seed.sql racket-fitness-db:/tmp/seed.sql
+docker exec -i racket-fitness-db psql -U postgres -d racket_fitness -f /tmp/seed.sql
 ```
 
-4. **Run database migrations**
-```bash
-cd backend
-npx prisma migrate dev
-npx prisma db seed
-```
+## Access
 
-5. **Access the application**
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:4000
-- API Docs: http://localhost:4000/api
+| URL | Description |
+|-----|-------------|
+| http://localhost:3000 | Homepage |
+| http://localhost:3000/club | Member access |
+| http://localhost:3000/admin | Admin dashboard |
+| http://localhost:4000/api/docs | API documentation |
 
-## 🎯 Features (Phase 1 POC)
+## Credentials
 
-### Club Owner Features
-- ✅ Schedule daily workout sessions
-- ✅ TV/tablet broadcast ready (no login required)
-- ✅ Basic usage analytics dashboard
-- ✅ Upload filmed content (Zumba, etc.)
-- ✅ Manage workout playlists
+- **Club Code:** `PADEL2024`
+- **Admin:** `admin@padelclub.com` / `admin123`
 
-### Member Features
-- ✅ On-demand workout access via QR/URL
-- ✅ Sport-specific routines (padel/pickleball/tennis)
-- ✅ Zumba with racket sessions
-- ✅ Bodyweight Pilates & conditioning
-- ✅ Verbal modification cues (active/less active)
-- ✅ Music-matched workout experience
+## Tech Stack
 
-### Technical Features
-- ✅ AI avatar video generation integration (Synthesia/HeyGen)
-- ✅ Royalty-free music overlay (Epidemic/Artlist compatible)
-- ✅ Video streaming with Mux
-- ✅ Batch content creation workflow
-- ✅ Multi-club support
-- ✅ Anonymous usage tracking
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 14, TypeScript, Tailwind CSS |
+| Backend | NestJS, TypeScript, Prisma |
+| Database | PostgreSQL 15 |
+| Video | Mux |
+| Deployment | Railway / Docker |
 
-## 🎬 Video Content Pipeline
+## Railway Deployment
 
-1. **AI Avatar Creation**: Script → Synthesia/HeyGen → MP4
-2. **Music Overlay**: FFmpeg batch processing
-3. **Upload to Mux**: Automatic encoding & streaming
-4. **Playlist Assignment**: Schedule for club broadcast
+This project is structured for Railway deployment:
+- `backend/` → Backend service (NestJS)
+- `frontend/` → Frontend service (Next.js)
+- PostgreSQL → Railway managed database
 
-## 📊 Database Schema
-
-- **Clubs**: Club information and settings
-- **Workouts**: Workout metadata (type, duration, difficulty)
-- **Videos**: Video assets with streaming URLs
-- **Schedules**: Planned workout sessions
-- **Analytics**: Usage tracking (anonymous)
-
-## 🔐 Authentication
-
-- **Club Access**: Simple club-specific URLs (no member login)
-- **Admin Panel**: Basic auth for club owners
-- **API**: JWT tokens for backend services
-
-## 🧪 Testing
-
-```bash
-# Backend tests
-cd backend
-npm run test
-npm run test:e2e
-
-# Frontend tests
-cd frontend
-npm run test
-```
-
-## 📦 Deployment
-
-### Production Build
-```bash
-# Build all services
-docker-compose -f docker-compose.prod.yml build
-
-# Deploy
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-### Environment Variables (Production)
-- `DATABASE_URL`: PostgreSQL connection string
-- `MUX_TOKEN_ID`: Mux API token
-- `MUX_TOKEN_SECRET`: Mux API secret
-- `SYNTHESIA_API_KEY`: Synthesia API key (optional)
-- `HEYGE_API_KEY`: HeyGen API key (optional)
-- `JWT_SECRET`: JWT signing secret
-- `NEXT_PUBLIC_API_URL`: Backend API URL
-
-## 🎯 Roadmap
-
-### Phase 1 (Current - 4 weeks)
-- [x] Core platform architecture
-- [x] 10-15 AI workouts with verbal cues
-- [x] TV/tablet player interface
-- [x] Club admin panel
-- [x] Music integration pipeline
-
-### Phase 1.5 (2 weeks)
-- [ ] Visual side-by-side modifications
-- [ ] Split-screen avatar demos
-- [ ] Enhanced accessibility features
-
-### Phase 2 (4 weeks)
-- [ ] Multi-club expansion (2-3 clubs)
-- [ ] Premium reformer Pilates tier
-- [ ] Advanced analytics
-- [ ] Payment integration
-
-## 📄 License
-
-Proprietary - All rights reserved
-
-## 🤝 Support
-
-For questions or issues, contact: support@racketfitness.platform
+See **[RAILWAY-DEPLOY.md](./RAILWAY-DEPLOY.md)** for step-by-step instructions.
