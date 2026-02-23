@@ -22,8 +22,11 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-# EXPOSE 3000
-ENV NODE_ENV=production
-# ENV PORT=3000
+# Copy startup script
+COPY start.sh ./start.sh
+RUN chmod +x start.sh
 
-CMD ["node", "server.js"]
+EXPOSE 3000
+ENV NODE_ENV=production
+
+CMD ["./start.sh"]
