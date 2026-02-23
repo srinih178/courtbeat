@@ -15,13 +15,16 @@ elif [ -f "/app/.next/standalone/server.js" ]; then
 else
   echo "❌ ERROR: Cannot find entry point!"
   echo "Searching for possible entry points..."
-  find dist -name "*.js" | head -10
+  find . -name "server.js" 2>/dev/null | head -10
   exit 1
 fi
 
 echo "✅ Found entry point: $ENTRY"
-
 echo ""
-echo "🎾 Starting CourtBeat FrontEnd..."
-echo "Entry point: $ENTRY"
-exec node $ENTRY --hostname 0.0.0.0 --port $PORT
+echo "🎾 Starting CourtBeat Frontend..."
+
+# CRITICAL: Set hostname to 0.0.0.0 so Railway can reach it
+export HOSTNAME="0.0.0.0"
+export PORT="${PORT:-3000}"
+
+exec node $ENTRY

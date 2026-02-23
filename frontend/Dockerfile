@@ -18,8 +18,10 @@ FROM node:20-slim
 
 WORKDIR /app
 
+# Copy the standalone output
 COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next ./.next
+
+# Copy static files
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
@@ -27,7 +29,11 @@ COPY --from=builder /app/public ./public
 COPY start.sh ./start.sh
 RUN chmod +x start.sh
 
+# Verify server.js exists
+RUN test -f server.js && echo "✅ server.js found" || echo "❌ server.js not found"
+
 EXPOSE 3000
 ENV NODE_ENV=production
+ENV HOSTNAME=0.0.0.0
 
 CMD ["./start.sh"]
