@@ -2,15 +2,16 @@
 
 import Link from 'next/link';
 import { Play, Settings, Activity, TrendingUp, Users, Zap } from 'lucide-react';
+import Image from 'next/image';
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="border-b border-gray-100 bg-white shadow-sm">
+      <nav className="border-b border-gray-100 bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
+            <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
               <div className="relative">
                 <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
                   <Activity className="w-6 h-6 text-white" strokeWidth={2.5} />
@@ -21,12 +22,21 @@ export default function Home() {
                 <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">CourtBeat</span>
                 <div className="text-[10px] text-gray-500 -mt-0.5">AI Fitness Platform</div>
               </div>
+            </Link>
+
+            <div className="flex items-center gap-3">
+              <Link href="/club" className="text-gray-600 hover:text-primary-600 font-medium text-sm transition-colors">
+                Member Access
+              </Link>
+              <Link href="/admin" className="text-gray-600 hover:text-primary-600 font-medium text-sm transition-colors">
+                Admin Login
+              </Link>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
+      {/* Hero Section with Image */}
       <div className="relative bg-gradient-to-br from-primary-600 via-primary-500 to-secondary-500">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
@@ -35,34 +45,73 @@ export default function Home() {
 
         {/* Content */}
         <div className="relative z-10 max-w-7xl mx-auto px-6 py-16">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium mb-5 border border-white/30">
-              <Zap className="w-4 h-4" />
-              <span>Next-Gen Fitness Platform</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
-              Transform Your Club with AI-Powered Workouts
-            </h1>
-            <p className="text-lg text-white/90 mb-8 max-w-2xl">
-              Professional fitness content for padel, pickleball, and tennis clubs. No instructors needed.
-            </p>
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* Left: Text Content */}
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium mb-5 border border-white/30">
+                <Zap className="w-4 h-4" />
+                <span>Next-Gen Fitness Platform</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                Transform Your Club with AI-Powered Workouts
+              </h1>
+              <p className="text-lg text-white/90 mb-8">
+                Professional fitness content for padel, pickleball, and tennis clubs. No instructors needed.
+              </p>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-wrap gap-4">
-              <Link
-                href="/club"
-                className="inline-flex items-center gap-2 bg-white text-primary-600 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                <Play className="w-5 h-5" />
-                Start Workout Now
-              </Link>
-              <Link
-                href="/admin"
-                className="inline-flex items-center gap-2 bg-primary-800 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-900 transition-all border-2 border-white/20"
-              >
-                <Settings className="w-5 h-5" />
-                Club Admin
-              </Link>
+              {/* CTA Buttons */}
+              <div className="flex flex-wrap gap-4">
+                <Link
+                  href="/club"
+                  className="inline-flex items-center gap-2 bg-white text-primary-600 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <Play className="w-5 h-5" />
+                  Start Workout Now
+                </Link>
+                <Link
+                  href="/admin"
+                  className="inline-flex items-center gap-2 bg-primary-800 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-900 transition-all border-2 border-white/20"
+                >
+                  <Settings className="w-5 h-5" />
+                  Club Admin
+                </Link>
+              </div>
+            </div>
+
+            {/* Right: Hero Image */}
+            <div className="relative">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
+                <img
+                  src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=600&h=700&fit=crop"
+                  alt="Athletes training at fitness club"
+                  className="w-full h-[500px] object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary-900/40 to-transparent"></div>
+                
+                {/* Floating Stats Card */}
+                <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-xl">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-2xl font-bold text-primary-600">10+</div>
+                      <div className="text-sm text-gray-600">Workout Types</div>
+                    </div>
+                    <div className="h-10 w-px bg-gray-300"></div>
+                    <div>
+                      <div className="text-2xl font-bold text-secondary-600">100+</div>
+                      <div className="text-sm text-gray-600">Happy Clubs</div>
+                    </div>
+                    <div className="h-10 w-px bg-gray-300"></div>
+                    <div>
+                      <div className="text-2xl font-bold text-coral-600">24/7</div>
+                      <div className="text-sm text-gray-600">Access</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Decorative Elements */}
+              <div className="absolute -top-4 -right-4 w-32 h-32 bg-secondary-400 rounded-full blur-3xl opacity-20"></div>
+              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-primary-400 rounded-full blur-3xl opacity-20"></div>
             </div>
           </div>
         </div>
@@ -220,10 +269,22 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-8">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <p className="text-sm">
-            CourtBeat &copy; 2024 - Professional Fitness for Racket Sports Clubs
-          </p>
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                <Activity className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-bold text-white">CourtBeat</span>
+            </div>
+            <p className="text-sm text-center">
+              CourtBeat &copy; 2024 - Professional Fitness for Racket Sports Clubs
+            </p>
+            <div className="flex gap-4">
+              <Link href="/club" className="text-sm hover:text-white transition-colors">Member Access</Link>
+              <Link href="/admin" className="text-sm hover:text-white transition-colors">Admin</Link>
+            </div>
+          </div>
         </div>
       </footer>
     </main>

@@ -2,17 +2,9 @@
 
 import { useState } from 'react';
 import axios from 'axios';
-import { Play, Clock, Dumbbell, ArrowLeft, Zap, AlertCircle, Sparkles } from 'lucide-react';
-
-// API URL works both client-side (NEXT_PUBLIC) and falls back gracefully
-const getApiUrl = () => {
-  if (typeof window !== 'undefined') {
-    return (window as any).__NEXT_PUBLIC_API_URL__ 
-      || process.env.NEXT_PUBLIC_API_URL 
-      || '/api-proxy';
-  }
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
-};
+import { Play, Clock, Dumbbell, ArrowLeft, Zap, AlertCircle, Sparkles, Home } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
@@ -24,6 +16,7 @@ const WORKOUT_IMAGES: Record<string, string> = {
 };
 
 export default function ClubPage() {
+  const router = useRouter();
   const [accessCode, setAccessCode] = useState('');
   const [club, setClub] = useState<any>(null);
   const [workouts, setWorkouts] = useState<any[]>([]);
@@ -43,16 +36,20 @@ export default function ClubPage() {
     } finally { setLoading(false); }
   };
 
+  const handleStartWorkout = (workout: any) => {
+    router.push(`/workout?id=${workout.id}&title=${encodeURIComponent(workout.title)}&duration=${workout.duration}&club=${encodeURIComponent(club.name)}`);
+  };
+
   if (!club) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-700 via-primary-600 to-secondary-500 p-4 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10" style={{backgroundImage:'radial-gradient(circle at 2px 2px,white 1px,transparent 0)',backgroundSize:'40px 40px'}} />
         <div className="w-full max-w-md relative z-10">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl shadow-2xl mb-4 relative">
+            <Link href="/" className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl shadow-2xl mb-4 relative hover:scale-105 transition-transform">
               <Zap className="w-9 h-9 text-primary-600" />
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-secondary-400 rounded-full border-2 border-white animate-pulse" />
-            </div>
+            </Link>
             <h1 className="text-4xl font-bold text-white mb-1">CourtBeat</h1>
             <p className="text-white/80 flex items-center justify-center gap-1 text-base">
               <Sparkles className="w-4 h-4" /> Member Access
@@ -95,9 +92,9 @@ export default function ClubPage() {
           </div>
 
           <div className="mt-5 text-center">
-            <a href="/" className="inline-flex items-center gap-2 text-white bg-white/15 hover:bg-white/25 border border-white/30 px-5 py-2 rounded-full text-sm font-medium transition-all backdrop-blur-sm">
-              <ArrowLeft className="w-4 h-4" /> Back to Home
-            </a>
+            <Link href="/" className="inline-flex items-center gap-2 text-white bg-white/15 hover:bg-white/25 border border-white/30 px-5 py-2 rounded-full text-sm font-medium transition-all backdrop-blur-sm">
+              <Home className="w-4 h-4" /> Back to Home
+            </Link>
           </div>
         </div>
       </div>
@@ -118,12 +115,12 @@ export default function ClubPage() {
               <p className="text-xs text-gray-500">Choose your workout</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="w-7 h-7 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
             </div>
             <span className="font-bold text-sm bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">CourtBeat</span>
-          </div>
+          </Link>
         </div>
       </div>
 
@@ -155,7 +152,10 @@ export default function ClubPage() {
                     <span className="px-2.5 py-1 bg-primary-50 text-primary-700 rounded-lg text-xs font-semibold">{w.difficulty?.replace('_',' ')}</span>
                     <span className="px-2.5 py-1 bg-secondary-50 text-secondary-700 rounded-lg text-xs font-semibold">{w.type?.replace('_',' ')}</span>
                   </div>
-                  <button className="w-full bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg text-sm">
+                  <button 
+                    onClick={() => handleStartWorkout(w)}
+                    className="w-full bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
+                  >
                     <Play className="w-4 h-4" /> Start Workout
                   </button>
                 </div>
