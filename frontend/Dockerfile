@@ -19,6 +19,7 @@ FROM node:20-slim
 WORKDIR /app
 
 COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
@@ -29,4 +30,4 @@ RUN chmod +x start.sh
 EXPOSE 3000
 ENV NODE_ENV=production
 
-CMD ["./start.sh"]
+CMD ["npx", "next", "start", "-p", "${PORT}"]
