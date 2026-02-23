@@ -1,8 +1,8 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Play, Pause, Volume2, Maximize } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { ArrowLeft, Play } from 'lucide-react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 
 const WORKOUT_VIDEOS: Record<string, string> = {
@@ -10,7 +10,7 @@ const WORKOUT_VIDEOS: Record<string, string> = {
   'w2': 'j2ltCFY028zde21ibROrSknQFo1aIHKSHx01axNJzsKKY', // Core Strength alternate ID
 };
 
-export default function WorkoutPlayerPage() {
+function WorkoutPlayerContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -123,5 +123,20 @@ export default function WorkoutPlayerPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function WorkoutPlayerPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading workout...</p>
+        </div>
+      </div>
+    }>
+      <WorkoutPlayerContent />
+    </Suspense>
   );
 }
